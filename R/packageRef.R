@@ -1,20 +1,25 @@
-library(dplyr)
-library(tidytext)
-library(tidyr)
-library(ggplot2)
-library(wordcloud)
-library(stringr)
-library(rtweet)
-library(reshape2)
-library(ggraph)
-library(igraph)
-library(widyr)
-library(devtools)
-library(roxygen2)
+#rtweet
+#tidytext
 
-                #########################################
-                ##DATA COLLECTION AND TIDYING FUNCTIONS##
-                #########################################
+#library(dplyr)
+#library(tidytext)
+#library(tidyr)
+#library(ggplot2)
+#library(wordcloud)
+#library(stringr)?
+#library(rtweet)
+#library(reshape2)
+#library(ggraph)
+#library(igraph)
+#library(widyr)?
+#dont need devtools unless for installing packages
+#library(devtools)
+#only need for complining but not needed in acutal package
+#library(roxygen2)
+
+#########################################
+##DATA COLLECTION AND TIDYING FUNCTIONS##
+#########################################
 
 #FUNCTION 1 - STREAM TWEETS
 #' streamTweets
@@ -28,13 +33,13 @@ library(roxygen2)
 #' @examples streamTweets("tree,bushes,apple orchard",60,"treeTweets.json")
 streamTweets <- function(searchWords,searchPeriod,fileName = "streamedTweets.json"){
   #list of words or phrases that will be searched for
-  stream_tweets(searchWords,
-                #search time period in seconds
-                timeout = searchPeriod,
-                #name of file with results
-                file_name = fileName,
-                #do not return results on screen
-                parse = FALSE
+  rtweet::stream_tweets(searchWords,
+                        #search time period in seconds
+                        timeout = searchPeriod,
+                        #name of file with results
+                        file_name = fileName,
+                        #do not return results on screen
+                        parse = FALSE
   )
 }
 
@@ -43,16 +48,16 @@ streamTweets <- function(searchWords,searchPeriod,fileName = "streamedTweets.jso
 #' loadTweets
 #'
 #' Load .json file containing streamed tweets into a data frame object.
-#' @param fileName File name containing streamed Tweets, can be left empty if streamTweets function fileName was left empty. Format: format: "myfilename.json"
+#' @param fileName File name containing streamed Tweets. Format: "myfilename.json"
 #' @return Data frame object containing streamed tweets and relevant information.
 #' @export
 #' @examples streamTweets() or streamTweets("myfilename.json")
-loadTweets <- function(fileName = "streamedTweets.json"){
+loadTweets <- function(fileName){
   #read in tweet data (.json file)
-  Tweets <<- parse_stream(fileName)
-  #convert text from tweets into data frame
-  TidyTweets <<- as.data.frame(Tweets[,5],drop=FALSE)
+  tweetsDf <- rtweet::parse_stream(fileName)
+  return(tweetsDf)
 }
+
 
 
 #FUNCTION 3 - TOKENIZE TWEETS INTO WORDS
@@ -64,30 +69,34 @@ loadTweets <- function(fileName = "streamedTweets.json"){
 #' @return Data frame object containing all Tweets split into n number of words.
 #' @export
 #' @examples tokenizeTweets(Tweets,3) tokenizeTweets(,2) tokenizeTweets()
-tokenizeTweets <- function(tidyTweetVarName=TidyTweets,tokenNum=1){
+tokenizeTweets <- function(tweetDf,tokenNum=1){
+  #convert array into df and keep only tweet text
+  tweetTextDf <- as.data.frame(tweetDf[,5],drop=FALSE)
+  #tokenize based on input: 1,2,3
   if(tokenNum==1){
-  TidyTweetsTokenized <<- tidyTweetVarName %>%
-    unnest_tokens(word,text)
+    tweetsTokenized <- tweetTextDf %>%
+      tidytext::unnest_tokens(word,text)
   }
   else if(tokenNum==2){
-  #seperate into bigrams
-  TidyTweetsTokenized <<- tidyTweetVarName %>%
-    #tokenize into tokenNum of words
-    unnest_tokens(bigram,text,token = "ngrams",n = tokenNum) %>%
-    #split each word into its individual cell
-    separate(bigram, c("word1","word2"), sep = " ")
+    #seperate into bigrams
+    tweetsTokenized <- tweetTextDf %>%
+      #tokenize into tokenNum of words
+      tidytext::unnest_tokens(bigram,text,token = "ngrams",n = tokenNum) %>%
+      #split each word into its individual cell
+      tidyr::separate(bigram, c("word1","word2"), sep = " ")
   }
   else if(tokenNum==3){
     #seperate into bigrams
-    TidyTweetsTokenized <<- tidyTweetVarName %>%
+    tweetsTokenized <- tweetTextDf %>%
       #tokenize into tokenNum of words
-      unnest_tokens(bigram,text,token = "ngrams",n = tokenNum) %>%
+      tidytext::unnest_tokens(bigram,text,token = "ngrams",n = tokenNum) %>%
       #split each word into its individual cell
-      separate(bigram, c("word1","word2","word3"), sep = " ")
+      tidyr::separate(bigram, c("word1","word2","word3"), sep = " ")
   }
   else{
     stop('Set tokenization number to 1, 2, or 3.')
   }
+  return(tweetsTokenized)
 }
 
 
@@ -99,25 +108,22 @@ tokenizeTweets <- function(tidyTweetVarName=TidyTweets,tokenNum=1){
 #' @return Displays the most frequent words used.
 #' @export
 #' @examples dispFreq() dispFreq(TweetsTokenized)
-dispFreq <- function(tokenizedTweetVarName=TidyTweetsTokenized){
+tokenFreq <- function(tokenizedTweetsDf){
   #check if tokenized by word or bigram
-  if(ncol(tokenizedTweetVarName)==1){
-  #sort by frequency
-    TweetFreq <<- tokenizedTweetVarName %>%
-    count(word,sort = TRUE)
-    print(TweetFreq)
+  if(ncol(tokenizedTweetsDf)==1){
+    #sort by frequency
+    tweetFreq <- tokenizedTweetsDf %>%
+      plyr::count(word,sort = TRUE)
   }
-  else if(ncol(tokenizedTweetVarName)==2){
-    TweetFreq <<-tokenizedTweetVarName %>%
-    count(word1,word2,sort=TRUE)
-    print(TweetFreq)
-
+  else if(ncol(tokenizedTweetsDf)==2){
+    tweetFreq <-tokenizedTweetsDf %>%
+      plyr::count(word1,word2,sort=TRUE)
   }
-  else if(ncol(tokenizedTweetVarName)==3){
-    TweetFreq <<- tokenizedTweetVarName %>%
-    count(word1,word2,word3,sort=TRUE)
-    print(TweetFreq)
+  else if(ncol(tokenizedTweetsDf)==3){
+    tweetFreq <- tokenizedTweetsDf %>%
+      plyr::count(word1,word2,word3,sort=TRUE)
   }
+  return(tweetFreq)
 }
 
 
@@ -131,10 +137,11 @@ dispFreq <- function(tokenizedTweetVarName=TidyTweetsTokenized){
 #' @export
 #' @examples tweetContext("pineapple") tweetContext("pineapple tree") tweetContext("pineapple",myImportedTweets)
 #look up anomalies for context
-tweetContext <- function(wordReq,tidyTweetsVarName=TidyTweets){
-  tidyTweetsVarName %>%
-    filter(str_detect(text, wordReq)) %>%
-    select(text)
+tweetContext <- function(tweetDataFrame,wordReq){
+  tweetsContaining <- tweetDataFrame %>%
+    dplyr::filter(str_detect(text, wordReq)) %>%
+    dplyr::select(text)
+  return(tweetsContaining)
 }
 
 
@@ -147,33 +154,34 @@ tweetContext <- function(wordReq,tidyTweetsVarName=TidyTweets){
 #' @return Tokenized Tweets data frame excluding stop words.
 #' @export
 #' @examples removeStopWords() removeStopWords(,c("tree","garden")) removeStopWords(tokenizedTweetsNew,"pear")
-removeStopWords <- function(tidyTweetsTokenizedVarName=TidyTweetsTokenized,extraStopWords=NULL){
+removeStopWords <- function(tweetDfTokenized,extraStopWords=NULL){
   #call stop words dictionary
   data(stop_words)
   #check whether extra stop words are entered, if so:
+  stop_words <- dplyr::bind_rows(data_frame(word = c("t.co","https"),lexicon = c("custom")),stop_words)
   if(!is.null(extraStopWords)){
     #add custom words to stop-words list
-    stop_words <- bind_rows(data_frame(word = extraStopWords,lexicon = c("custom")),stop_words)
-    }
+    stop_words <- dplyr::bind_rows(data_frame(word = extraStopWords,lexicon = c("custom")),stop_words)
+  }
   #remove stop words from dataframe
-  if(ncol(tidyTweetsTokenizedVarName)==1){
-    TidyTweetsTokenized <<- tidyTweetsTokenizedVarName %>%
-      anti_join(stop_words)
-    }
-  else if(ncol(tidyTweetsTokenizedVarName)==2){
-    TidyTweetsTokenized <<- tidyTweetsTokenizedVarName %>%
+  if(ncol(tweetDfTokenized)==1){
+    tweetDfTokenClean <- tweetDfTokenized %>%
+      dplyr::anti_join(stop_words)
+  }
+  else if(ncol(tweetDfTokenized)==2){
+    tweetDfTokenClean <- tweetDfTokenized %>%
       #anti_join(stop_words)
-      filter(!word1 %in% stop_words$word) %>%
-      filter(!word2 %in% stop_words$word)
-    }
-  dispFreq(TidyTweetsTokenized)
+      dplyr::filter(!word1 %in% stop_words$word) %>%
+      dplyr::filter(!word2 %in% stop_words$word)
+  }
+  return(tweetDfTokenClean)
 }
 
 
 
-                      ###########################
-                      ##VISUALISATION FUNCTIONS##
-                      ###########################
+###########################
+##VISUALISATION FUNCTIONS##
+###########################
 
 #FUNCTION 7 - PLOT OF MOST COMMON WORDS ==> BAR GRAPH FORMAT
 #' plotFreqBar
@@ -184,28 +192,28 @@ removeStopWords <- function(tidyTweetsTokenizedVarName=TidyTweetsTokenized,extra
 #' @return Top n most frequent words used in the Tweet dataset.
 #' @export
 #' @examples plotFreqBar(,100) plotFreqBar() plotFreqBar(mostFrequentlyUsedWords,5)
-plotFreqBar <- function(mostFreqWords = TweetFreq,numOfWords=10){
-  if(ncol(TweetFreq)==2){
-    TweetFreqTemp <- mostFreqWords
+plotFreqBar <- function(tokenFreqs,numOfWords=10){
+  if(ncol(tokenFreqs)==2){
+    TweetFreqTemp <- tokenFreqs
   }
-  else if(ncol(TweetFreq)==3){
-    TweetFreqTemp <- mutate(TweetFreq,word = paste(word1,word2))
+  else if(ncol(tokenFreqs)==3){
+    TweetFreqTemp <- mutate(tokenFreqs,word = paste(word1,word2))
     TweetFreqTemp %>%
-      select(-c(word1,word2))
+      dplyr::select(-c(word1,word2))
   }
-  else if(ncol(TweetFreq)==4){
-    TweetFreqTemp <- mutate(TweetFreq,word = paste(word1,word2,word3))
+  else if(ncol(tokenFreqs)==4){
+    TweetFreqTemp <- mutate(tokenFreqs,word = paste(word1,word2,word3))
     TweetFreqTemp %>%
-      select(-c(word1,word2,word3))
+      dplyr::select(-c(word1,word2,word3))
   }
   TweetFreqTemp %>%
-    arrange(desc(n)) %>%
-    top_n(numOfWords,n) %>%
-    mutate(word = reorder(word, n)) %>%
-    ggplot(aes(word, n)) +
+    dplyr::arrange(desc(n)) %>%
+    dplyr::top_n(numOfWords,n) %>%
+    dplyr::mutate(word = reorder(word, n)) %>%
+    ggplot2::ggplot(aes(word, n)) +
     geom_col(show.legend = FALSE) +
-      labs(y = "Word count",x = NULL) +
-      coord_flip()
+    labs(y = "Word count",x = NULL) +
+    coord_flip()
 }
 
 #FUNCTION 8 - PLOT OF MOST COMMON WORDS ==> WORD CLOUD FORMAT
@@ -218,11 +226,11 @@ plotFreqBar <- function(mostFreqWords = TweetFreq,numOfWords=10){
 #' @return Cloud plot containing n number of most frequent words within the Tweet dataset
 #' @export
 #' @examples plotFreqCloud() plotFreqCloud(,10,5) plotFreqCloud(mostFrequentlyUsedWords,100,100)
-plotFreqCloud <- function(mostFreqWords = TweetFreq, maxWords=70, minWordFreq=100){
-  if(ncol(TweetFreq)==2){
-    mostFreqWords %>%
-      with(wordcloud(word,n,max.words = maxWords,min.freq = minWordFreq,random.order = FALSE,
-                    rot.per=0.35,colors = brewer.pal(8,"Dark2")))
+plotFreqCloud <- function(tokenFreqs, maxWords=70, minWordFreq=100){
+  if(ncol(tokenFreqs)==2){
+    tokenFreqs %>%
+      wordcloud::with(wordcloud(word,n,max.words = maxWords,min.freq = minWordFreq,random.order = FALSE,
+                                rot.per=0.35,colors = RColorBrewer::brewer.pal(8,"Dark2")))
   }
   else{
     stop('Cannot plot word cloud with tokenization >1')
@@ -240,14 +248,14 @@ plotFreqCloud <- function(mostFreqWords = TweetFreq, maxWords=70, minWordFreq=10
 #' @export
 #' @examples plotCompMap() plotCompMap(,10,5) plotCompMap(mostFrequentlyUsedWords,100,100)
 #create comparisons map against pos and neg
-plotCompMap <- function(mostFreqWords = TweetFreq, maxWords = 50, minWordFreq = 1){
-  if(ncol(TweetFreq)==2){
-    TweetFreq %>%
-      inner_join(get_sentiments("bing")) %>%
-      arrange(desc(n)) %>%
-      filter(row_number() <= maxWords & n >= minWordFreq) %>%
-      acast(word~sentiment,value.var = "n",fill=0) %>%
-      comparison.cloud(colors = brewer.pal(8,"Dark2"), max.words = maxWords,match.colors = TRUE,random.order = FALSE)
+plotCompCloud <- function(tokenFreqs, maxWords = 50, minWordFreq = 1){
+  if(ncol(tokenFreqs)==2){
+    tokenFreqs %>%
+      dplyr::inner_join(get_sentiments("bing")) %>%
+      dplyr::arrange(desc(n)) %>%
+      dplyr::filter(row_number() <= maxWords & n >= minWordFreq) %>%
+      reshape2::acast(word~sentiment,value.var = "n",fill=0) %>%
+      wordcloud::comparison.cloud(colors = RColorBrewer::brewer.pal(8,"Dark2"), max.words = maxWords,match.colors = TRUE,random.order = FALSE)
   }
   else{
     stop('Cannot plot word cloud with tokenization >1')
@@ -265,15 +273,15 @@ plotCompMap <- function(mostFreqWords = TweetFreq, maxWords = 50, minWordFreq = 
 #' @export
 #' @examples plotCompBar() plotCompBar(,10,5) plotCompBar(mostFrequentlyUsedWords,100,100)
 #create comparisons map against pos and neg
-plotCompBar <- function(mostFreqWords = TweetFreq, maxWords = 10, minWordFreq = 1){
-  mostFreqWords %>%
-    inner_join(get_sentiments("bing")) %>%
-    arrange(desc(n)) %>%
-    group_by(sentiment) %>%
-    filter(row_number() <= maxWords & n >= minWordFreq) %>%
-    ungroup() %>%
-    mutate(word = reorder(word, n)) %>%
-    ggplot(aes(word, n, fill = sentiment)) +
+plotCompBar <- function(tokenFreqs, maxWords = 10, minWordFreq = 1){
+  tokenFreqs %>%
+    plyr::inner_join(get_sentiments("bing")) %>%
+    dplyr::arrange(desc(n)) %>%
+    dplyr::group_by(sentiment) %>%
+    dplyr::filter(row_number() <= maxWords & n >= minWordFreq) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(word = reorder(word, n)) %>%
+    ggplot2::ggplot(aes(word, n, fill = sentiment)) +
     geom_col(show.legend = FALSE) +
     facet_wrap(~sentiment, scales = "free_y") +
     labs(y = "Frequency",x = NULL) + coord_flip()
@@ -288,15 +296,15 @@ plotCompBar <- function(mostFreqWords = TweetFreq, maxWords = 10, minWordFreq = 
 #' @return Directional cloud plot displaying connectivity between Bigrams
 #' @export
 #' @examples plotBigrams(,10) plotBigrams() plotBigrams(mostFrequentlyUsedWords,)
-plotBigrams <- function(mostFreqWords = TweetFreq, minWordFreq = 5){
+plotBigrams <- function(tokenFreqs, minWordFreq = 5){
   arrowDesign <- grid::arrow(type="closed",length=unit(.15,"inches"))
-  mostFreqWords %>%
-    filter(n >= minWordFreq) %>%
-    graph_from_data_frame() %>%
-    ggraph(layout = "fr") +
-      geom_edge_link(aes(edge_alpha=n),show.legend = FALSE,
-      arrow=arrowDesign,end_cap=circle(.07,'inches'))+
-      geom_node_point(color="lightblue",size=5) +
-      geom_node_text(aes(label=name),vjust=1,hjust=1) +
-      theme_void()
+  tokenFreqs %>%
+    dplyr::filter(n >= minWordFreq) %>%
+    igraph::graph_from_data_frame() %>%
+    ggraph::ggraph(layout = "fr") +
+    geom_edge_link(aes(edge_alpha=n),show.legend = TRUE,
+                   arrow=arrowDesign,end_cap=circle(.07,'inches'))+
+    geom_node_point(color="lightblue",size=5) +
+    geom_node_text(aes(label=name),vjust=1,hjust=1) +
+    theme_void()
 }

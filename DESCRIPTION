@@ -2,9 +2,10 @@ Package: TwitterDataMiningPackage
 Type: Package
 Title: What the Package Does (Title Case)
 Version: 0.1.0
-Author: Jakub Kryczka <jak222@exeter.ac.uk>
-Maintainer: Jakub Kryczka
+Author: Jakub Kryczka
+Maintainer: Jakub Kryczka <jak222@exeter.ac.uk>
 Description: Package containing all relevant functions required for obtaining Tweets and analysing them.
+Depends:tidyverse,tidytext,wordcloud,rtweet,reshape2,ggraph,igraph,RColorBrewer
 License: N/A
 Encoding: UTF-8
 LazyData: true
