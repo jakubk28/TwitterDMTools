@@ -110,18 +110,18 @@ tokenizeTweets <- function(tweetDf,tokenNum=1){
 #' @examples dispFreq() dispFreq(TweetsTokenized)
 tokenFreq <- function(tokenizedTweetsDf){
   #check if tokenized by word or bigram
-  if(ncol(tokenizedTweetsDf)==1){
+  if(ncol(tokenizedTweetsDf) == 1){
     #sort by frequency
     tweetFreq <- tokenizedTweetsDf %>%
-      plyr::count(word,sort = TRUE)
+      dplyr::count(word,sort = TRUE)
   }
-  else if(ncol(tokenizedTweetsDf)==2){
+  else if(ncol(tokenizedTweetsDf) == 2){
     tweetFreq <-tokenizedTweetsDf %>%
-      plyr::count(word1,word2,sort=TRUE)
+      dplyr::count(word1,word2,sort = TRUE)
   }
-  else if(ncol(tokenizedTweetsDf)==3){
+  else if(ncol(tokenizedTweetsDf) == 3){
     tweetFreq <- tokenizedTweetsDf %>%
-      plyr::count(word1,word2,word3,sort=TRUE)
+      dplyr::count(word1,word2,word3,sort = TRUE)
   }
   return(tweetFreq)
 }
@@ -304,7 +304,7 @@ plotBigrams <- function(tokenFreqs, minWordFreq = 5){
     ggraph::ggraph(layout = "fr") +
     geom_edge_link(aes(edge_alpha=n),show.legend = TRUE,
                    arrow=arrowDesign,end_cap=circle(.07,'inches'))+
-    geom_node_point(color="lightblue",size=5) +
+    geom_node_point(color=n,size=5) +
     geom_node_text(aes(label=name),vjust=1,hjust=1) +
     theme_void()
 }
