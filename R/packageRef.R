@@ -139,7 +139,7 @@ tokenFreq <- function(tokenizedTweetsDf){
 #look up anomalies for context
 tweetContext <- function(tweetDataFrame,wordReq){
   tweetsContaining <- tweetDataFrame %>%
-    dplyr::filter(str_detect(text, wordReq)) %>%
+    dplyr::filter(stringr::str_detect(text, wordReq)) %>%
     dplyr::select(text)
   return(tweetsContaining)
 }
