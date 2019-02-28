@@ -1,6 +1,6 @@
-Package: TwitterDataMiningPackage
+Package: TwitterDMTools
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Twitter Data mining tools
 Version: 0.1.0
 Author: Jakub Kryczka
 Maintainer: Jakub Kryczka <jak222@exeter.ac.uk>

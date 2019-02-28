@@ -291,7 +291,7 @@ plotCompBar <- function(tokenFreqs, maxWords = 10, minWordFreq = 1){
 #' plotBigrams
 #'
 #' Plot a cloud plot showing how bigrams connect together and the frequency of bigrams
-#' @param mostFreqWords Name of variable containing the frequency of words used, leave blank if unchanged
+#' @param tokenFreqs Name of variable containing the frequency of words used, leave blank if unchanged
 #' @param minWordFreq Minimum frequency Bigram to appear on the cloud plot
 #' @return Directional cloud plot displaying connectivity between Bigrams
 #' @export
