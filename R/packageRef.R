@@ -166,13 +166,22 @@ removeStopWords <- function(tweetDfTokenized,extraStopWords=NULL){
   #remove stop words from dataframe
   if(ncol(tweetDfTokenized)==1){
     tweetDfTokenClean <- tweetDfTokenized %>%
-      dplyr::anti_join(stop_words)
+      #dplyr::anti_join(stop_words)
+    dplyr::filter(!word %in% stop_words$word)
+
   }
   else if(ncol(tweetDfTokenized)==2){
     tweetDfTokenClean <- tweetDfTokenized %>%
       #anti_join(stop_words)
       dplyr::filter(!word1 %in% stop_words$word) %>%
       dplyr::filter(!word2 %in% stop_words$word)
+  }
+  else if(ncol(tweetDfTokenized)==3){
+    tweetDfTokenClean <- tweetDfTokenized %>%
+      #anti_join(stop_words)
+      dplyr::filter(!word1 %in% stop_words$word) %>%
+      dplyr::filter(!word2 %in% stop_words$word) %>%
+      dplyr::filter(!word3 %in% stop_words$word)
   }
   return(tweetDfTokenClean)
 }
@@ -229,7 +238,7 @@ plotFreqBar <- function(tokenFreqs,numOfWords=10){
 plotFreqCloud <- function(tokenFreqs, maxWords=70, minWordFreq=100){
   if(ncol(tokenFreqs)==2){
     tokenFreqs %>%
-      wordcloud::with(wordcloud(word,n,max.words = maxWords,min.freq = minWordFreq,random.order = FALSE,
+     with(wordcloud::wordcloud(word,n,max.words = maxWords,min.freq = minWordFreq,random.order = FALSE,
                                 rot.per=0.35,colors = RColorBrewer::brewer.pal(8,"Dark2")))
   }
   else{
@@ -275,7 +284,7 @@ plotCompCloud <- function(tokenFreqs, maxWords = 50, minWordFreq = 1){
 #create comparisons map against pos and neg
 plotCompBar <- function(tokenFreqs, maxWords = 10, minWordFreq = 1){
   tokenFreqs %>%
-    plyr::inner_join(get_sentiments("bing")) %>%
+    dplyr::inner_join(get_sentiments("bing")) %>%
     dplyr::arrange(desc(n)) %>%
     dplyr::group_by(sentiment) %>%
     dplyr::filter(row_number() <= maxWords & n >= minWordFreq) %>%
@@ -304,7 +313,7 @@ plotBigrams <- function(tokenFreqs, minWordFreq = 5){
     ggraph::ggraph(layout = "fr") +
     geom_edge_link(aes(edge_alpha=n),show.legend = TRUE,
                    arrow=arrowDesign,end_cap=circle(.07,'inches'))+
-    geom_node_point(color=n,size=5) +
+    geom_node_point(color='cyan4',size=5) +
     geom_node_text(aes(label=name),vjust=1,hjust=1) +
     theme_void()
 }
