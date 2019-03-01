@@ -4,15 +4,14 @@
 \alias{plotCompBar}
 \title{plotCompBar}
 \usage{
-plotCompBar(mostFreqWords = TweetFreq, maxWords = 10,
-  minWordFreq = 1)
+plotCompBar(tweetDataFrameTokenized, maxWords = 10, minWordFreq = 1)
 }
 \arguments{
-\item{mostFreqWords}{Name of variable containing the frequency of words used, leave blank if unchanged}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
 
-\item{maxWords}{n number of most commonly used words to be displayed}
+\item{maxWords}{Maximum number of words to appear on the plot.}
 
-\item{minWordFreq}{Minimum frequency of word to appear on the cloud plot}
+\item{minWordFreq}{Minimum frequency of word to appear on the plot.}
 }
 \value{
 Bar chart containing n most frequent positive and negative words in the Tweet data set
@@ -21,5 +20,5 @@ Bar chart containing n most frequent positive and negative words in the Tweet da
 Plot a bar chart of the n most negative and positive words in the Tweet data set
 }
 \examples{
-plotCompBar() plotCompBar(,10,5) plotCompBar(mostFrequentlyUsedWords,100,100)
+plotCompBar(tweetDataFrameTokenized) plotCompBar(tweetDataFrameTokenized,10,5)
 }

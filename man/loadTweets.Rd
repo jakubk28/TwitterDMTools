@@ -4,10 +4,10 @@
 \alias{loadTweets}
 \title{loadTweets}
 \usage{
-loadTweets(fileName = "streamedTweets.json")
+loadTweets(fileName)
 }
 \arguments{
-\item{fileName}{File name containing streamed Tweets, can be left empty if streamTweets function fileName was left empty. Format: format: "myfilename.json"}
+\item{fileName}{File name containing streamed Tweets. Format: "myfilename.json"}
 }
 \value{
 Data frame object containing streamed tweets and relevant information.
@@ -16,5 +16,5 @@ Data frame object containing streamed tweets and relevant information.
 Load .json file containing streamed tweets into a data frame object.
 }
 \examples{
-streamTweets() or streamTweets("myfilename.json")
+tweetDataFrame <- loadTweets("myfilename.json")
 }

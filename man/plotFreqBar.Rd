@@ -4,10 +4,10 @@
 \alias{plotFreqBar}
 \title{plotFreqBar}
 \usage{
-plotFreqBar(mostFreqWords = TweetFreq, numOfWords = 10)
+plotFreqBar(tweetDataFrameTokenized, numOfWords = 10)
 }
 \arguments{
-\item{mostFreqWords}{Name of variable containing the frequency of words used, leave blank if unchanged}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
 
 \item{numOfWords}{Top n words to be plotted, default is 10.}
 }
@@ -18,5 +18,5 @@ Top n most frequent words used in the Tweet dataset.
 Plot a bar chart of the n most frequent words in the Tweet data set
 }
 \examples{
-plotFreqBar(,100) plotFreqBar() plotFreqBar(mostFrequentlyUsedWords,5)
+plotFreqBar(tweetDataFrameTokenized,5) plotFreqBar(tweetDataFrameTokenized)
 }

@@ -4,10 +4,10 @@
 \alias{tokenizeTweets}
 \title{tokenizeTweets}
 \usage{
-tokenizeTweets(tidyTweetVarName = TidyTweets, tokenNum = 1)
+tokenizeTweets(tweetDataFrame, tokenNum = 1)
 }
 \arguments{
-\item{tidyTweetVarName}{data frame variable containing imported streamed tweets, leave blank if name was not changed.}
+\item{tweetDataFrame}{Name of the dataframe object containing all tweets (output of loadTweets() )}
 
 \item{tokenNum}{1 - splits into singular words, 2 - splits into pairs of words, 3 - splits into triples of words.}
 }
@@ -18,5 +18,5 @@ Data frame object containing all Tweets split into n number of words.
 Splits contents of tweets into words/pairs of words/ triples of words depending on the tokenization number.
 }
 \examples{
-tokenizeTweets(Tweets,3) tokenizeTweets(,2) tokenizeTweets()
+tweetDataFrameTokenized <- tokenizeTweets(tweetDataFrame,1)
 }

@@ -4,12 +4,12 @@
 \alias{plotBigrams}
 \title{plotBigrams}
 \usage{
-plotBigrams(mostFreqWords = TweetFreq, minWordFreq = 5)
+plotBigrams(tweetDataFrameTokenized, minWordFreq = 5)
 }
 \arguments{
-\item{mostFreqWords}{Name of variable containing the frequency of words used, leave blank if unchanged}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
 
-\item{minWordFreq}{Minimum frequency Bigram to appear on the cloud plot}
+\item{minWordFreq}{Minimum frequency of word to appear on the plot.}
 }
 \value{
 Directional cloud plot displaying connectivity between Bigrams
@@ -18,5 +18,5 @@ Directional cloud plot displaying connectivity between Bigrams
 Plot a cloud plot showing how bigrams connect together and the frequency of bigrams
 }
 \examples{
-plotBigrams(,10) plotBigrams() plotBigrams(mostFrequentlyUsedWords,)
+plotBigrams(tweetDataFrameTokenized,10) plotBigrams(tweetDataFrameTokenized)
 }

@@ -4,12 +4,12 @@
 \alias{tweetContext}
 \title{tweetContext}
 \usage{
-tweetContext(wordReq, tidyTweetsVarName = TidyTweets)
+tweetContext(tweetDataFrame, wordReq)
 }
 \arguments{
-\item{WordReq}{The word or phrase wanted for context, format: "word1"}
+\item{tweetDataFrame}{Name of the dataframe object containing all tweets (output of loadTweets() )}
 
-\item{TidyTweetsVarName}{Name of the variable containing the imported tweets, if unchanged then leave blank.}
+\item{WordReq}{The word or phrase wanted for context, format: "word1"}
 }
 \value{
 Full length Tweet containing the word or phrase searched for.
@@ -18,5 +18,5 @@ Full length Tweet containing the word or phrase searched for.
 If uncertain about the context of a popular word, the full length of the tweet will be shown to give context.
 }
 \examples{
-tweetContext("pineapple") tweetContext("pineapple tree") tweetContext("pineapple",myImportedTweets)
+tweetContext(tweetDataFrame,"pineapple") tweetContext(tweetDataFrame,"pineapple tree")
 }

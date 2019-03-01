@@ -4,11 +4,10 @@
 \alias{removeStopWords}
 \title{removeStopWords}
 \usage{
-removeStopWords(tidyTweetsTokenizedVarName = TidyTweetsTokenized,
-  extraStopWords = NULL)
+removeStopWords(tweetDataFrameTokenized, extraStopWords = NULL)
 }
 \arguments{
-\item{tidyTweetsTokenizedVarName}{the variable name of the data frame containing the tokenized tweets. Leave blank if unchanged}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
 
 \item{extraStopWords}{If there are extra words to exclude from the analysis enter them here, format: "c("word1","word2")}
 }
@@ -19,5 +18,5 @@ Tokenized Tweets data frame excluding stop words.
 Call and remove stop words from the tokenized tweet data set, stop words include common words that are not interesting for analysis (the,and, a, ...)
 }
 \examples{
-removeStopWords() removeStopWords(,c("tree","garden")) removeStopWords(tokenizedTweetsNew,"pear")
+removeStopWords(tweetDataFrameTokenized) removeStopWords(tweetDataFrameTokenized,c("tree","garden"))
 }

@@ -1,21 +1,3 @@
-#rtweet
-#tidytext
-
-#library(dplyr)
-#library(tidytext)
-#library(tidyr)
-#library(ggplot2)
-#library(wordcloud)
-#library(stringr)?
-#library(rtweet)
-#library(reshape2)
-#library(ggraph)
-#library(igraph)
-#library(widyr)?
-#dont need devtools unless for installing packages
-#library(devtools)
-#only need for complining but not needed in acutal package
-#library(roxygen2)
 
 #########################################
 ##DATA COLLECTION AND TIDYING FUNCTIONS##
@@ -51,7 +33,7 @@ streamTweets <- function(searchWords,searchPeriod,fileName = "streamedTweets.jso
 #' @param fileName File name containing streamed Tweets. Format: "myfilename.json"
 #' @return Data frame object containing streamed tweets and relevant information.
 #' @export
-#' @examples streamTweets() or streamTweets("myfilename.json")
+#' @examples tweetDataFrame <- loadTweets("myfilename.json")
 loadTweets <- function(fileName){
   #read in tweet data (.json file)
   tweetsDf <- rtweet::parse_stream(fileName)
@@ -64,14 +46,14 @@ loadTweets <- function(fileName){
 #' tokenizeTweets
 #'
 #' Splits contents of tweets into words/pairs of words/ triples of words depending on the tokenization number.
-#' @param tidyTweetVarName data frame variable containing imported streamed tweets, leave blank if name was not changed.
+#' @param tweetDataFrame Name of the dataframe object containing all tweets (output of loadTweets() )
 #' @param tokenNum 1 - splits into singular words, 2 - splits into pairs of words, 3 - splits into triples of words.
 #' @return Data frame object containing all Tweets split into n number of words.
 #' @export
-#' @examples tokenizeTweets(Tweets,3) tokenizeTweets(,2) tokenizeTweets()
-tokenizeTweets <- function(tweetDf,tokenNum=1){
+#' @examples tweetDataFrameTokenized <- tokenizeTweets(tweetDataFrame,1)
+tokenizeTweets <- function(tweetDataFrame,tokenNum=1){
   #convert array into df and keep only tweet text
-  tweetTextDf <- as.data.frame(tweetDf[,5],drop=FALSE)
+  tweetTextDf <- as.data.frame(tweetDataFrame[,5],drop=FALSE)
   #tokenize based on input: 1,2,3
   if(tokenNum==1){
     tweetsTokenized <- tweetTextDf %>%
@@ -101,26 +83,26 @@ tokenizeTweets <- function(tweetDf,tokenNum=1){
 
 
 #FUNCTION 4 - DISPLAY MOST FREQUENT WORDS
-#' dispFreq
+#' tokenFreq
 #'
 #' Displays the most common words/pair/triplesof words.
-#' @param tokenizedTweetVarName Leave blank unless the name of the tokenized Tweets data frame was changed
-#' @return Displays the most frequent words used.
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @return Displays the most frequent words used within Tweet data.
 #' @export
-#' @examples dispFreq() dispFreq(TweetsTokenized)
-tokenFreq <- function(tokenizedTweetsDf){
+#' @examples mostCommonTokens <- tokenFreq(tweetDataFrameTokenized)
+tokenFreq <- function(tweetDataFrameTokenized){
   #check if tokenized by word or bigram
-  if(ncol(tokenizedTweetsDf) == 1){
+  if(ncol(tweetDataFrameTokenized) == 1){
     #sort by frequency
-    tweetFreq <- tokenizedTweetsDf %>%
+    tweetFreq <- tweetDataFrameTokenized %>%
       dplyr::count(word,sort = TRUE)
   }
-  else if(ncol(tokenizedTweetsDf) == 2){
-    tweetFreq <-tokenizedTweetsDf %>%
+  else if(ncol(tweetDataFrameTokenized) == 2){
+    tweetFreq <-tweetDataFrameTokenized %>%
       dplyr::count(word1,word2,sort = TRUE)
   }
-  else if(ncol(tokenizedTweetsDf) == 3){
-    tweetFreq <- tokenizedTweetsDf %>%
+  else if(ncol(tweetDataFrameTokenized) == 3){
+    tweetFreq <- tweetDataFrameTokenized %>%
       dplyr::count(word1,word2,word3,sort = TRUE)
   }
   return(tweetFreq)
@@ -131,11 +113,11 @@ tokenFreq <- function(tokenizedTweetsDf){
 #' tweetContext
 #'
 #' If uncertain about the context of a popular word, the full length of the tweet will be shown to give context.
+#' @param tweetDataFrame Name of the dataframe object containing all tweets (output of loadTweets() )
 #' @param WordReq The word or phrase wanted for context, format: "word1"
-#' @param TidyTweetsVarName Name of the variable containing the imported tweets, if unchanged then leave blank.
 #' @return Full length Tweet containing the word or phrase searched for.
 #' @export
-#' @examples tweetContext("pineapple") tweetContext("pineapple tree") tweetContext("pineapple",myImportedTweets)
+#' @examples tweetContext(tweetDataFrame,"pineapple") tweetContext(tweetDataFrame,"pineapple tree")
 #look up anomalies for context
 tweetContext <- function(tweetDataFrame,wordReq){
   tweetsContaining <- tweetDataFrame %>%
@@ -149,12 +131,12 @@ tweetContext <- function(tweetDataFrame,wordReq){
 #' removeStopWords
 #'
 #' Call and remove stop words from the tokenized tweet data set, stop words include common words that are not interesting for analysis (the,and, a, ...)
-#' @param tidyTweetsTokenizedVarName the variable name of the data frame containing the tokenized tweets. Leave blank if unchanged
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
 #' @param extraStopWords If there are extra words to exclude from the analysis enter them here, format: "c("word1","word2")
 #' @return Tokenized Tweets data frame excluding stop words.
 #' @export
-#' @examples removeStopWords() removeStopWords(,c("tree","garden")) removeStopWords(tokenizedTweetsNew,"pear")
-removeStopWords <- function(tweetDfTokenized,extraStopWords=NULL){
+#' @examples removeStopWords(tweetDataFrameTokenized) removeStopWords(tweetDataFrameTokenized,c("tree","garden"))
+removeStopWords <- function(tweetDataFrameTokenized,extraStopWords=NULL){
   #call stop words dictionary
   data(stop_words)
   #check whether extra stop words are entered, if so:
@@ -164,20 +146,20 @@ removeStopWords <- function(tweetDfTokenized,extraStopWords=NULL){
     stop_words <- dplyr::bind_rows(data_frame(word = extraStopWords,lexicon = c("custom")),stop_words)
   }
   #remove stop words from dataframe
-  if(ncol(tweetDfTokenized)==1){
-    tweetDfTokenClean <- tweetDfTokenized %>%
+  if(ncol(tweetDataFrameTokenized)==1){
+    tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #dplyr::anti_join(stop_words)
     dplyr::filter(!word %in% stop_words$word)
 
   }
-  else if(ncol(tweetDfTokenized)==2){
-    tweetDfTokenClean <- tweetDfTokenized %>%
+  else if(ncol(tweetDataFrameTokenized)==2){
+    tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #anti_join(stop_words)
       dplyr::filter(!word1 %in% stop_words$word) %>%
       dplyr::filter(!word2 %in% stop_words$word)
   }
-  else if(ncol(tweetDfTokenized)==3){
-    tweetDfTokenClean <- tweetDfTokenized %>%
+  else if(ncol(tweetDataFrameTokenized)==3){
+    tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #anti_join(stop_words)
       dplyr::filter(!word1 %in% stop_words$word) %>%
       dplyr::filter(!word2 %in% stop_words$word) %>%
@@ -196,12 +178,13 @@ removeStopWords <- function(tweetDfTokenized,extraStopWords=NULL){
 #' plotFreqBar
 #'
 #' Plot a bar chart of the n most frequent words in the Tweet data set
-#' @param mostFreqWords Name of variable containing the frequency of words used, leave blank if unchanged
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
 #' @param numOfWords Top n words to be plotted, default is 10.
 #' @return Top n most frequent words used in the Tweet dataset.
 #' @export
-#' @examples plotFreqBar(,100) plotFreqBar() plotFreqBar(mostFrequentlyUsedWords,5)
-plotFreqBar <- function(tokenFreqs,numOfWords=10){
+#' @examples plotFreqBar(tweetDataFrameTokenized,5) plotFreqBar(tweetDataFrameTokenized)
+plotFreqBar <- function(tweetDataFrameTokenized,numOfWords=10){
+  tokenFreqs <- tokenFreq(tweetDataFrameTokenized)
   if(ncol(tokenFreqs)==2){
     TweetFreqTemp <- tokenFreqs
   }
@@ -229,13 +212,14 @@ plotFreqBar <- function(tokenFreqs,numOfWords=10){
 #' plotFreqCloud
 #'
 #' Plot a cloud plot containing the most frequently used words within the Tweet data set
-#' @param mostFreqWords Name of variable containing the frequency of words used, leave blank if unchanged
-#' @param maxWords n number of most commonly used words to be displayed
-#' @param minWordFreq Minimum frequency of word to appear on the cloud plot
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param maxWords Maximum number of words to appear on the plot.
+#' @param minWordFreq Minimum frequency of word to appear on the plot
 #' @return Cloud plot containing n number of most frequent words within the Tweet dataset
 #' @export
-#' @examples plotFreqCloud() plotFreqCloud(,10,5) plotFreqCloud(mostFrequentlyUsedWords,100,100)
-plotFreqCloud <- function(tokenFreqs, maxWords=70, minWordFreq=100){
+#' @examples plotFreqCloud(tweetDataFrameTokenized) plotFreqCloud(tweetDataFrameTokenized,10,5)
+plotFreqCloud <- function(tweetDataFrameTokenized, maxWords=70, minWordFreq=100){
+  tokenFreqs <- tokenFreq(tweetDataFrameTokenized)
   if(ncol(tokenFreqs)==2){
     tokenFreqs %>%
      with(wordcloud::wordcloud(word,n,max.words = maxWords,min.freq = minWordFreq,random.order = FALSE,
@@ -250,20 +234,22 @@ plotFreqCloud <- function(tokenFreqs, maxWords=70, minWordFreq=100){
 #' plotCompMap
 #'
 #' Plot a comparison cloud of the n most negative and positive words in the Tweet data set
-#' @param mostFreqWords Name of variable containing the frequency of words used, leave blank if unchanged
-#' @param maxWords n number of most commonly used words to be displayed
-#' @param minWordFreq Minimum frequency of word to appear on the cloud plot
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param maxWords Maximum number of words to appear on the plot.
+#' @param minWordFreq Minimum frequency of word to appear on the plot
 #' @return Cloud plot containing n most frequent positive and negative words in the Tweet data set
 #' @export
-#' @examples plotCompMap() plotCompMap(,10,5) plotCompMap(mostFrequentlyUsedWords,100,100)
+#' @examples plotCompMap(tweetDataFrameTokenized) plotCompMap(tweetDataFrameTokenized,10,5)
 #create comparisons map against pos and neg
-plotCompCloud <- function(tokenFreqs, maxWords = 50, minWordFreq = 1){
+plotCompCloud <- function(tweetDataFrameTokenized, maxWords = 50, minWordFreq = 1){
+  tokenFreqs <- tokenFreq(tweetDataFrameTokenized)
   if(ncol(tokenFreqs)==2){
-    tokenFreqs %>%
+    temp<-tokenFreqs %>%
       dplyr::inner_join(get_sentiments("bing")) %>%
       dplyr::arrange(desc(n)) %>%
       dplyr::filter(row_number() <= maxWords & n >= minWordFreq) %>%
-      reshape2::acast(word~sentiment,value.var = "n",fill=0) %>%
+      reshape2::acast(word~sentiment,value.var = "n",fill=0)
+    temp<-temp[,c(2,1)] %>%
       wordcloud::comparison.cloud(colors = RColorBrewer::brewer.pal(8,"Dark2"), max.words = maxWords,match.colors = TRUE,random.order = FALSE)
   }
   else{
@@ -275,15 +261,15 @@ plotCompCloud <- function(tokenFreqs, maxWords = 50, minWordFreq = 1){
 #' plotCompBar
 #'
 #' Plot a bar chart of the n most negative and positive words in the Tweet data set
-#' @param mostFreqWords Name of variable containing the frequency of words used, leave blank if unchanged
-#' @param maxWords n number of most commonly used words to be displayed
-#' @param minWordFreq Minimum frequency of word to appear on the cloud plot
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param maxWords Maximum number of words to appear on the plot.
+#' @param minWordFreq Minimum frequency of word to appear on the plot.
 #' @return Bar chart containing n most frequent positive and negative words in the Tweet data set
 #' @export
-#' @examples plotCompBar() plotCompBar(,10,5) plotCompBar(mostFrequentlyUsedWords,100,100)
+#' @examples plotCompBar(tweetDataFrameTokenized) plotCompBar(tweetDataFrameTokenized,10,5)
 #create comparisons map against pos and neg
-plotCompBar <- function(tokenFreqs, maxWords = 10, minWordFreq = 1){
-  tokenFreqs %>%
+plotCompBar <- function(tweetDataFrameTokenized, maxWords = 10, minWordFreq = 1){
+  tokenFreq(tweetDataFrameTokenized) %>%
     dplyr::inner_join(get_sentiments("bing")) %>%
     dplyr::arrange(desc(n)) %>%
     dplyr::group_by(sentiment) %>%
@@ -300,12 +286,13 @@ plotCompBar <- function(tokenFreqs, maxWords = 10, minWordFreq = 1){
 #' plotBigrams
 #'
 #' Plot a cloud plot showing how bigrams connect together and the frequency of bigrams
-#' @param tokenFreqs Name of variable containing the frequency of words used, leave blank if unchanged
-#' @param minWordFreq Minimum frequency Bigram to appear on the cloud plot
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param minWordFreq Minimum frequency of word to appear on the plot.
 #' @return Directional cloud plot displaying connectivity between Bigrams
 #' @export
-#' @examples plotBigrams(,10) plotBigrams() plotBigrams(mostFrequentlyUsedWords,)
-plotBigrams <- function(tokenFreqs, minWordFreq = 5){
+#' @examples plotBigrams(tweetDataFrameTokenized,10) plotBigrams(tweetDataFrameTokenized)
+plotBigrams <- function(tweetDataFrameTokenized, minWordFreq = 5){
+  tokenFreqs <- tokenFreq(tweetDataFrameTokenized)
   arrowDesign <- grid::arrow(type="closed",length=unit(.15,"inches"))
   tokenFreqs %>%
     dplyr::filter(n >= minWordFreq) %>%
