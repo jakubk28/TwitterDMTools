@@ -7,7 +7,7 @@
 tokenizeTweets(tweetDataFrame, tokenNum = 1)
 }
 \arguments{
-\item{tweetDataFrame}{Name of the dataframe object containing all tweets (output of loadTweets() )}
+\item{tweetDataFrame}{Name of the dataframe object containing all tweets (output of loadTweets())}
 
 \item{tokenNum}{1 - splits into singular words, 2 - splits into pairs of words, 3 - splits into triples of words.}
 }

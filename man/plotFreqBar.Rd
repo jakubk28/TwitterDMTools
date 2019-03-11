@@ -7,7 +7,7 @@
 plotFreqBar(tweetDataFrameTokenized, numOfWords = 10)
 }
 \arguments{
-\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets())}
 
 \item{numOfWords}{Top n words to be plotted, default is 10.}
 }

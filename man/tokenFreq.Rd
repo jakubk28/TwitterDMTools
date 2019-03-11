@@ -7,7 +7,7 @@
 tokenFreq(tweetDataFrameTokenized)
 }
 \arguments{
-\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets())}
 }
 \value{
 Displays the most frequent words used within Tweet data.

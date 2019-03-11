@@ -8,7 +8,7 @@ plotFreqCloud(tweetDataFrameTokenized, maxWords = 70,
   minWordFreq = 100)
 }
 \arguments{
-\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets())}
 
 \item{maxWords}{Maximum number of words to appear on the plot.}
 

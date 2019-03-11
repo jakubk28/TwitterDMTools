@@ -7,7 +7,7 @@
 removeStopWords(tweetDataFrameTokenized, extraStopWords = NULL)
 }
 \arguments{
-\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets())}
 
 \item{extraStopWords}{If there are extra words to exclude from the analysis enter them here, format: "c("word1","word2")}
 }

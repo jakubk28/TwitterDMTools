@@ -7,7 +7,7 @@
 tweetContext(tweetDataFrame, wordReq)
 }
 \arguments{
-\item{tweetDataFrame}{Name of the dataframe object containing all tweets (output of loadTweets() )}
+\item{tweetDataFrame}{Name of the dataframe object containing all tweets (output of loadTweets())}
 
 \item{WordReq}{The word or phrase wanted for context, format: "word1"}
 }

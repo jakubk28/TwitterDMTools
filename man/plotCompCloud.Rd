@@ -2,12 +2,12 @@
 % Please edit documentation in R/packageRef.R
 \name{plotCompCloud}
 \alias{plotCompCloud}
-\title{plotCompMap}
+\title{plotCompCloud}
 \usage{
 plotCompCloud(tweetDataFrameTokenized, maxWords = 50, minWordFreq = 1)
 }
 \arguments{
-\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )}
+\item{tweetDataFrameTokenized}{Dataframe object containing word tokens from tweets (Output of tokenizeTweets())}
 
 \item{maxWords}{Maximum number of words to appear on the plot.}
 

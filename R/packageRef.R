@@ -46,7 +46,7 @@ loadTweets <- function(fileName){
 #' tokenizeTweets
 #'
 #' Splits contents of tweets into words/pairs of words/ triples of words depending on the tokenization number.
-#' @param tweetDataFrame Name of the dataframe object containing all tweets (output of loadTweets() )
+#' @param tweetDataFrame Name of the dataframe object containing all tweets (output of loadTweets())
 #' @param tokenNum 1 - splits into singular words, 2 - splits into pairs of words, 3 - splits into triples of words.
 #' @return Data frame object containing all Tweets split into n number of words.
 #' @export
@@ -89,7 +89,7 @@ tokenizeTweets <- function(tweetDataFrame,tokenNum=1){
 #' tokenFreq
 #'
 #' Displays the most common words/pair/triplesof words.
-#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
 #' @return Displays the most frequent words used within Tweet data.
 #' @export
 #' @examples mostCommonTokens <- tokenFreq(tweetDataFrameTokenized)
@@ -116,7 +116,7 @@ tokenFreq <- function(tweetDataFrameTokenized){
 #' tweetContext
 #'
 #' If uncertain about the context of a popular word, the full length of the tweet will be shown to give context.
-#' @param tweetDataFrame Name of the dataframe object containing all tweets (output of loadTweets() )
+#' @param tweetDataFrame Name of the dataframe object containing all tweets (output of loadTweets())
 #' @param WordReq The word or phrase wanted for context, format: "word1"
 #' @return Full length Tweet containing the word or phrase searched for.
 #' @export
@@ -134,7 +134,7 @@ tweetContext <- function(tweetDataFrame,wordReq){
 #' removeStopWords
 #'
 #' Call and remove stop words from the tokenized tweet data set, stop words include common words that are not interesting for analysis (the,and, a, ...)
-#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
 #' @param extraStopWords If there are extra words to exclude from the analysis enter them here, format: "c("word1","word2")
 #' @return Tokenized Tweets data frame excluding stop words.
 #' @export
@@ -181,7 +181,7 @@ removeStopWords <- function(tweetDataFrameTokenized,extraStopWords=NULL){
 #' plotFreqBar
 #'
 #' Plot a bar chart of the n most frequent words in the Tweet data set
-#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
 #' @param numOfWords Top n words to be plotted, default is 10.
 #' @return Top n most frequent words used in the Tweet dataset.
 #' @export
@@ -215,7 +215,7 @@ plotFreqBar <- function(tweetDataFrameTokenized,numOfWords=10){
 #' plotFreqCloud
 #'
 #' Plot a cloud plot containing the most frequently used words within the Tweet data set
-#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
 #' @param maxWords Maximum number of words to appear on the plot.
 #' @param minWordFreq Minimum frequency of word to appear on the plot
 #' @return Cloud plot containing n number of most frequent words within the Tweet dataset
@@ -237,7 +237,7 @@ plotFreqCloud <- function(tweetDataFrameTokenized, maxWords=70, minWordFreq=100)
 #' plotCompCloud
 #'
 #' Plot a comparison cloud of the n most negative and positive words in the Tweet data set
-#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
 #' @param maxWords Maximum number of words to appear on the plot.
 #' @param minWordFreq Minimum frequency of word to appear on the plot
 #' @return Cloud plot containing n most frequent positive and negative words in the Tweet data set
@@ -264,7 +264,7 @@ plotCompCloud <- function(tweetDataFrameTokenized, maxWords = 50, minWordFreq = 
 #' plotCompBar
 #'
 #' Plot a bar chart of the n most negative and positive words in the Tweet data set
-#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
 #' @param maxWords Maximum number of words to appear on the plot.
 #' @param minWordFreq Minimum frequency of word to appear on the plot.
 #' @return Bar chart containing n most frequent positive and negative words in the Tweet data set
@@ -289,7 +289,7 @@ plotCompBar <- function(tweetDataFrameTokenized, maxWords = 10, minWordFreq = 1)
 #' plotBigrams
 #'
 #' Plot a cloud plot showing how bigrams connect together and the frequency of bigrams
-#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
 #' @param minWordFreq Minimum frequency of word to appear on the plot.
 #' @return Directional cloud plot displaying connectivity between Bigrams
 #' @export
@@ -306,4 +306,141 @@ plotBigrams <- function(tweetDataFrameTokenized, minWordFreq = 5){
     geom_node_point(color='cyan4',size=5) +
     geom_node_text(aes(label=name),vjust=1,hjust=1) +
     theme_void()
+}
+
+
+
+#############################
+##TOPIC MODELLING FUNCTIONS##
+#############################
+
+
+#FUNCTION 12 - CREATE LDA MODEL
+#' ldaForm
+#'
+#' Convert data frame object into document term matrix for use with lda clustering
+#'
+#' @keywords internal
+#' @noRd
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
+#' @return Document term matrix, suitable for clustering using lda algorithm
+#' @examples ldaForm(tweetDataFrameTokenized)
+ldaForm <- function(tweetDataFrameTokenized){
+  ldaInputForm <- tweetDataFrameTokenized %>%
+    #count unique words per document
+    dplyr::group_by(document) %>%
+    dplyr::count(word) %>%
+    dplyr::ungroup() %>%
+    #cast into document term matrix
+    tidytext::cast_dtm(document,word,n)
+  return(ldaInputForm)
+}
+
+#FUNCTION 13 -Estimate number of topics in LDA model
+#' estTopics
+#'
+#' Produce a plot with using 4 optimisationg techniques to determine range of optimal topic numbers for the LDA model.
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
+#' @param minTopics Lower bound of topics to be optimised over.
+#' @param maxTopics Upper bound of topics to be optimised over.
+#' @param stepNum Optimisation step amount. (1 will take longer but be more accurate)
+#' @return Optimised range of topics for specific data frame variable.
+#' @export
+#' @examples estTopics(tweetDataFrameTokenized,2,30,1
+estTopics <- function(tweetDataFrameTokenized,minTopics=2,maxTopics=30,stepNum=1){
+
+  #optimise topic number over range specified
+  result <- ldatuning::FindTopicsNumber(
+    ldaForm(tweetDataFrameTokenized),
+    topics = seq(from = minTopics, to = maxTopics, by = stepNum),
+    metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+    method = "Gibbs",
+    control = list(seed = 77),
+    mc.cores = 2L,
+    verbose = TRUE
+  )
+  #plot results
+  ldatuning::FindTopicsNumber_plot(result)
+  #return table form of results
+  return(result)
+
+}
+
+#FUNCTION 14 - CREATE LDA MODEL
+#' tweetLDA
+#'
+#' Create a latent Dirichlet allocation cluster model for a tweet data frame.
+#' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets())
+#' @param numberOfTopics Number of topics associated with the corpus, this is the amount of groups the clustering
+#' algorithm will split the model into. If number of topics is unknown, use (guess function) first to estimate.
+#' @return Model type object.
+#' @export
+#' @examples tweetLDA(tweetDataFrameTokenized,8)
+tweetLDA <- function(tweetDataFrameTokenized, numberOfTopics){
+
+  #create lda cluster model using Gibbs sampling
+  trump_lda <- topicmodels::LDA(
+    ldaForm(tweetDataFrameTokenized),
+    k=numberOfTopics,
+    method = "Gibbs"
+  )
+
+}
+
+
+#FUNCTION 15 - PLOT TOPIC TERMS
+#' plotTopicTerms
+#'
+#' Plot most terms associated with each topic
+#' @param ldaModel lda model with numerous topics, output of tweetLDA().
+#' @param topN number of top terms to be plotted for each topic
+#' @return Plot of most common terms within each topic
+#' @export
+#' @examples plotTopicTerms(tweetDataFrameTokenized,10)
+plotTopicTerms <- function(ldaModel,topN=10){
+
+  #extract top 10 terms from each topic
+  top_terms <- tidytext::tidy(ldaModel) %>%
+    dplyr::group_by(topic) %>%
+    dplyr::top_n(topN,beta) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(topic,-beta)
+
+  #plot extracted beta terms
+  top_terms %>%
+    dplyr::mutate(term = reorder(term, beta)) %>%
+    dplyr::group_by(topic, term) %>%
+    dplyr::arrange(desc(beta)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(term = factor(paste(term, topic, sep = "__"),
+                         levels = rev(paste(term, topic, sep = "__")))) %>%
+    ggplot2::ggplot(aes(term, beta, fill = as.factor(topic))) +
+      geom_col(show.legend = FALSE) +
+      coord_flip() +
+      scale_x_discrete(labels = function(x) gsub("__.+$", "", x)) +
+      labs(title = "Top 10 terms in each LDA topic",
+      x = NULL, y = expression(beta)) +
+      facet_wrap(~ topic, ncol = 4, scales = "free")
+
+}
+
+
+#FUNCTION 16 - PLOT TOPICS
+#' plotTopicDist
+#'
+#' Plot distribution of gamma values for specific topics
+#' @param ldaModel lda model with numerous topics, output of tweetLDA().
+#' @return Plot of distribution of gamma for each topic
+#' @export
+#' @examples plotTopicDist(tweetDataFrameTokenized)
+plotTopicDist <- function(ldaModel){
+
+  #distrbution of probabilty for each topic
+  ggplot2::ggplot(tidytext::tidy(ldaModel,matrix="gamma"), aes(gamma, fill = as.factor(topic))) +
+    geom_histogram(show.legend = FALSE) +
+    facet_wrap(~ topic, ncol = 4) +
+    scale_y_log10() +
+    labs(title = "Distribution of probability for each topic",
+    y = "Number of documents", x = expression(gamma))
+
 }
