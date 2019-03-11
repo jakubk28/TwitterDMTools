@@ -53,7 +53,10 @@ loadTweets <- function(fileName){
 #' @examples tweetDataFrameTokenized <- tokenizeTweets(tweetDataFrame,1)
 tokenizeTweets <- function(tweetDataFrame,tokenNum=1){
   #convert array into df and keep only tweet text
-  tweetTextDf <- as.data.frame(tweetDataFrame[,5],drop=FALSE)
+  tweetTextDf <- as.data.frame(mutate(tweetDataFrame[,5],1:nrow(tweetDataFrame)))
+  names(tweetTextDf)[2] <- "document"
+  tweetTextDf$text <-gsub('[[:punct:]]','',tweetTextDf$text)
+  #tweetTextDf <- as.data.frame(tweetDataFrame[,5])
   #tokenize based on input: 1,2,3
   if(tokenNum==1){
     tweetsTokenized <- tweetTextDf %>%
@@ -92,16 +95,16 @@ tokenizeTweets <- function(tweetDataFrame,tokenNum=1){
 #' @examples mostCommonTokens <- tokenFreq(tweetDataFrameTokenized)
 tokenFreq <- function(tweetDataFrameTokenized){
   #check if tokenized by word or bigram
-  if(ncol(tweetDataFrameTokenized) == 1){
+  if(ncol(tweetDataFrameTokenized) == 2){
     #sort by frequency
     tweetFreq <- tweetDataFrameTokenized %>%
       dplyr::count(word,sort = TRUE)
   }
-  else if(ncol(tweetDataFrameTokenized) == 2){
+  else if(ncol(tweetDataFrameTokenized) == 3){
     tweetFreq <-tweetDataFrameTokenized %>%
       dplyr::count(word1,word2,sort = TRUE)
   }
-  else if(ncol(tweetDataFrameTokenized) == 3){
+  else if(ncol(tweetDataFrameTokenized) == 4){
     tweetFreq <- tweetDataFrameTokenized %>%
       dplyr::count(word1,word2,word3,sort = TRUE)
   }
@@ -140,25 +143,25 @@ removeStopWords <- function(tweetDataFrameTokenized,extraStopWords=NULL){
   #call stop words dictionary
   data(stop_words)
   #check whether extra stop words are entered, if so:
-  stop_words <- dplyr::bind_rows(data_frame(word = c("t.co","https"),lexicon = c("custom")),stop_words)
+  stop_words <- dplyr::bind_rows(data_frame(word = c("t.co","https","amp"),lexicon = c("custom")),stop_words)
   if(!is.null(extraStopWords)){
     #add custom words to stop-words list
     stop_words <- dplyr::bind_rows(data_frame(word = extraStopWords,lexicon = c("custom")),stop_words)
   }
   #remove stop words from dataframe
-  if(ncol(tweetDataFrameTokenized)==1){
+  if(ncol(tweetDataFrameTokenized)==2){
     tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #dplyr::anti_join(stop_words)
-    dplyr::filter(!word %in% stop_words$word)
+      dplyr::filter(!word %in% stop_words$word)
 
   }
-  else if(ncol(tweetDataFrameTokenized)==2){
+  else if(ncol(tweetDataFrameTokenized)==3){
     tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #anti_join(stop_words)
       dplyr::filter(!word1 %in% stop_words$word) %>%
       dplyr::filter(!word2 %in% stop_words$word)
   }
-  else if(ncol(tweetDataFrameTokenized)==3){
+  else if(ncol(tweetDataFrameTokenized)==4){
     tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #anti_join(stop_words)
       dplyr::filter(!word1 %in% stop_words$word) %>%
@@ -231,7 +234,7 @@ plotFreqCloud <- function(tweetDataFrameTokenized, maxWords=70, minWordFreq=100)
 }
 
 #FUNCTION 9 - PLOT OF MOST COMMON POS AND NEG WORDS ==> WORD CLOUD FORMAT
-#' plotCompMap
+#' plotCompCloud
 #'
 #' Plot a comparison cloud of the n most negative and positive words in the Tweet data set
 #' @param tweetDataFrameTokenized Dataframe object containing word tokens from tweets (Output of tokenizeTweets() )
