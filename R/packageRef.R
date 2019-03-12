@@ -14,6 +14,13 @@
 #' @export
 #' @examples streamTweets("tree,bushes,apple orchard",60,"treeTweets.json")
 streamTweets <- function(searchWords,searchPeriod,fileName = "streamedTweets.json"){
+
+  #checks whether final 5 characters of the string contain .json file extension
+  if(stringr::str_sub(fileName,-5,-1) %in% '.json'== FALSE){
+    #if false append .json file extention to file name
+    fileName<-paste0(fileName,'.json')
+  }
+
   #list of words or phrases that will be searched for
   rtweet::stream_tweets(searchWords,
                         #search time period in seconds
@@ -35,6 +42,13 @@ streamTweets <- function(searchWords,searchPeriod,fileName = "streamedTweets.jso
 #' @export
 #' @examples tweetDataFrame <- loadTweets("myfilename.json")
 loadTweets <- function(fileName){
+
+  #checks whether final 5 characters of the string contain .json file extension
+  if(stringr::str_sub(fileName,-5,-1) %in% '.json'== FALSE){
+    #if false append .json file extention to file name
+    fileName<-paste0(fileName,'.json')
+  }
+
   #read in tweet data (.json file)
   tweetsDf <- rtweet::parse_stream(fileName)
   return(tweetsDf)
@@ -52,35 +66,34 @@ loadTweets <- function(fileName){
 #' @export
 #' @examples tweetDataFrameTokenized <- tokenizeTweets(tweetDataFrame,1)
 tokenizeTweets <- function(tweetDataFrame,tokenNum=1){
-  #convert array into df and keep only tweet text
+
+  #convert array into dataframe and keep only tweet text
   tweetTextDf <- as.data.frame(mutate(tweetDataFrame[,5],1:nrow(tweetDataFrame)))
+  #rename column 2 to document
   names(tweetTextDf)[2] <- "document"
+  #remove punctuation from text
   tweetTextDf$text <-gsub('[[:punct:]]','',tweetTextDf$text)
-  #tweetTextDf <- as.data.frame(tweetDataFrame[,5])
-  #tokenize based on input: 1,2,3
+
+  #tokenize into single words
   if(tokenNum==1){
+    #tokenize into single words
     tweetsTokenized <- tweetTextDf %>%
       tidytext::unnest_tokens(word,text)
   }
-  else if(tokenNum==2){
-    #seperate into bigrams
+
+  #tokenize into n bigrams
+  else if(tokenNum>=2){
     tweetsTokenized <- tweetTextDf %>%
       #tokenize into tokenNum of words
       tidytext::unnest_tokens(bigram,text,token = "ngrams",n = tokenNum) %>%
       #split each word into its individual cell
-      tidyr::separate(bigram, c("word1","word2"), sep = " ")
+      tidyr::separate(bigram, paste0('word',seq(tokenNum)), sep = " ")
+    #if tokenization is set to greater than 3 produce warning
+    if(tokenNum>3){
+      warning('recommend using token of 1,2,3')
+    }
   }
-  else if(tokenNum==3){
-    #seperate into bigrams
-    tweetsTokenized <- tweetTextDf %>%
-      #tokenize into tokenNum of words
-      tidytext::unnest_tokens(bigram,text,token = "ngrams",n = tokenNum) %>%
-      #split each word into its individual cell
-      tidyr::separate(bigram, c("word1","word2","word3"), sep = " ")
-  }
-  else{
-    stop('Set tokenization number to 1, 2, or 3.')
-  }
+  #return tokenized df
   return(tweetsTokenized)
 }
 
@@ -140,7 +153,8 @@ tweetContext <- function(tweetDataFrame,wordReq){
 #' @export
 #' @examples removeStopWords(tweetDataFrameTokenized) removeStopWords(tweetDataFrameTokenized,c("tree","garden"))
 removeStopWords <- function(tweetDataFrameTokenized,extraStopWords=NULL){
-  #call stop words dictionary
+
+    #call stop words dictionary
   data(stop_words)
   #check whether extra stop words are entered, if so:
   stop_words <- dplyr::bind_rows(data_frame(word = c("t.co","https","amp"),lexicon = c("custom")),stop_words)
@@ -148,27 +162,29 @@ removeStopWords <- function(tweetDataFrameTokenized,extraStopWords=NULL){
     #add custom words to stop-words list
     stop_words <- dplyr::bind_rows(data_frame(word = extraStopWords,lexicon = c("custom")),stop_words)
   }
+
   #remove stop words from dataframe
   if(ncol(tweetDataFrameTokenized)==2){
     tweetDfTokenClean <- tweetDataFrameTokenized %>%
-      #dplyr::anti_join(stop_words)
       dplyr::filter(!word %in% stop_words$word)
-
   }
-  else if(ncol(tweetDataFrameTokenized)==3){
+
+    else if(ncol(tweetDataFrameTokenized)==3){
     tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #anti_join(stop_words)
       dplyr::filter(!word1 %in% stop_words$word) %>%
       dplyr::filter(!word2 %in% stop_words$word)
   }
-  else if(ncol(tweetDataFrameTokenized)==4){
+
+    else if(ncol(tweetDataFrameTokenized)==4){
     tweetDfTokenClean <- tweetDataFrameTokenized %>%
       #anti_join(stop_words)
       dplyr::filter(!word1 %in% stop_words$word) %>%
       dplyr::filter(!word2 %in% stop_words$word) %>%
       dplyr::filter(!word3 %in% stop_words$word)
   }
-  return(tweetDfTokenClean)
+
+    return(tweetDfTokenClean)
 }
 
 
@@ -282,6 +298,7 @@ plotCompBar <- function(tweetDataFrameTokenized, maxWords = 10, minWordFreq = 1)
     ggplot2::ggplot(aes(word, n, fill = sentiment)) +
     geom_col(show.legend = FALSE) +
     facet_wrap(~sentiment, scales = "free_y") +
+    #scale_fill_discrete(labels=c("Negative","Positive")) +
     labs(y = "Frequency",x = NULL) + coord_flip()
 }
 
@@ -379,12 +396,13 @@ estTopics <- function(tweetDataFrameTokenized,minTopics=2,maxTopics=30,stepNum=1
 tweetLDA <- function(tweetDataFrameTokenized, numberOfTopics){
 
   #create lda cluster model using Gibbs sampling
-  trump_lda <- topicmodels::LDA(
+  temp_LDA <- topicmodels::LDA(
     ldaForm(tweetDataFrameTokenized),
     k=numberOfTopics,
-    method = "Gibbs"
+    method = "Gibbs",
+    control = list(seed=1234)
   )
-
+  return(temp_LDA)
 }
 
 
