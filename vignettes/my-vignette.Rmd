@@ -202,29 +202,46 @@ It is important to understand that format of the cloud plot means that the size 
 ## 4.3 Topic modelling
 In text mining it is often interesting and worthwhile to investigate and identify distinct topics being discussed within the text corpus. Topic modelling achieves this by performing unsupervised clustering algorithms on a corpus that consists of numerous documents in order to identify natural groups of words that fit together to form topics. 
 
-Whilst there are numerous algorithms within the topic modelling scene, this package will focus on using the Latent Dirichlet allocation (LDA) method. The method treats each document within the data set as a mixture of topics, and each topic as a mixture of words. This approach is particularly useful when analysing organic texts such as tweets as authers often mention a number of topics within one tweet rather than just one, meaning that documents overlap in terms of topics within them.
+Whilst there are numerous algorithms within the topic modelling scene, this package will focus on using the Latent Dirichlet allocation (LDA) method, one of the most popular topic modelling algorithms [ref]. The method treats each document within the data set as a mixture of topics, and each topic as a mixture of words. This approach is particularly useful when analysing organic texts, such as tweets; authors often mention a number of topics within one tweet rather than just one, meaning that documents overlap in terms of topics within them.
+
+INCLUDE A SUBTLE MATHS EXPLAINATION OF HOW IT WORKS + INCLUDE EQUATION
+
+In order to perform the LDA algorithm, number of clustering groups must be specified. Whilst this would be an easy feat in an example such as a newspaper (as it would contain distinct countable topics: sport, finance, politics) the number in our case must be estimated due to the unknown nature of the topics contained within the tweets. There are a number of ways to estimate number of topics for a text [ref], this package however will use a neat compliation package `ldatuning` [ref] which takes various performance metrics and trials them on a range of topic numbers specified, returning a intuative result for a possible range of suitable topics. 
+
+To begin topic estimation, simply pass a tokenized tweet data frame into the `estTopics()` function and specify a range of topic numbers to trial. In this case we will trial topics ranging from 2 to 16 in intervals of 1.
 
 ```{r message=FALSE,results=FALSE,cache=TRUE,fig.align="center",fig.width=6,fig.height=6,fig.cap="4.3.1"}
 #estimate number of topics in topic model
 estimatedTopicNumber <- estTopics(Token1,2,16,1)
 ```
 
-stuff
+When optimizing hyperparameters for classification and clustering algorithms, it is often the case that there is no optimal value [ref]. Instead, like in this case, a range of possible values are obtained that should be tried in practise. By assessing figure 4.3.1 possible topic numbers could include: 4, 5, and 9. 
 
 ```{r message=FALSE,cache=TRUE}
-#estimate number of topics in topic model
+#create LDA model with 9 topics
 ExampleLDA<-tweetLDA(Token1,9)
 ```
 
+Once a LDA model has been fitted, it is a good idea to check what topics have been found from the corpus of tweets and whether they make contextual sence in terms of our keywords. The `plotTopicTerms()` function can be used to plot the top terms associated with each topic, along with the term's respective $\beta$ value.
+
 ```{r message=FALSE,warning=FALSE,fig.align="center",fig.width=7,fig.height=6,cache=TRUE,fig.cap="4.3.2"}
+#plot words for 9 topics of model
 plotTopicTerms(ExampleLDA)
 ```
 
-```{r message=FALSE,warning=FALSE,fig.align="center",fig.width=6,fig.height=6,cache=TRUE,fig.cap="4.3.3"}
+Most of the topics make sense and seem appropraite to our search for tweets including "palm oil" and "plastic pollution", one clear result is that not a lot of tweets associated with plastic pollution were detected, as indicated by the lack of the terms within the topics. A lot of the topics in figure 4.3.2 make sense, topic 1 is focused around the news of the city of Chester being the first to be palm oil sustainable [ref], topic 6 being about products within the uk which still involve palm oil such as nutella [ref], and topic 4 focusing around Gregg's new vegan sausage roll and introduction of new vegan alternatives within food brands [ref]. Some topics such as 9 are not as clear, to get a better understanding of some of these terms we can refer to figure 4.1.4, the term network suggests that the news letter is an analytical newsletter and there are tweets raising awareness for it, indicated by the "visit" term. This is also enforced by the "infopalmoilanalyticscom" term suggesting a link to a analytical website regarding palm oil. 
+
+The topics seem sensible, one final measure to gauge the accuracy of the model is to plot the $\gamma$ distribution of the documents within the topics using the `plotTopicDist()` function.
+
+```{r message=FALSE,warning=FALSE,fig.align="center",fig.width=7,fig.height=6,cache=TRUE,fig.cap="4.3.3"}
+#plot distribution of documents within topics
 plotTopicDist(ExampleLDA)
 ```
 
+Each plot within figure 4.3.3 shows a distrubtion of the $\gamma$ values for each of the documents in the corpus respective to that topic, where $\gamma$ is the estimated proportion of words from that document that are generated specifically from that topic. High spikes close to close to $\gamma=0$ in the majority of the topics indicates that there is a high proportion of words in those documents not being generated from that topic; this is expected as most documents will not belong in every topic. Higher $\gamma$ value spikes indicate that there is a high proportion of words within a document that are generated specifically from that topic. For example, topic 9 has a group of documents with $\gamma$ values relatively higher than the rest of the documents, indicating that around 40% of the words within those documents are generated exclusively from topic 9. Taking this idea back to the terms of topic 9, many were raising awareness and advertising a newsletter about palm oil, in which case the majority of the tweet would be focused around advertising the newsletter.
 
+#dev svg
+#ops knit get oabdic katex
 
 
 footnotes^[Ain case i need format for footnote.]
