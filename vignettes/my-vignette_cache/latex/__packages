@@ -1,4 +1,6 @@
 base
+devtools
+usethis
 tidyverse
 ggplot2
 tibble
@@ -18,5 +20,3 @@ igraph
 topicmodels
 ldatuning
 TwitterDMTools
-devtools
-usethis
