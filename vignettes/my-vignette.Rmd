@@ -2,8 +2,8 @@
 title: "TwitterDMTools"
 author: "Jakub Kryczka"
 date: "March 2019"
-#output: rmarkdown::html_vignette
-output: rmarkdown::pdf_document
+output: rmarkdown::html_vignette
+#output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{TwitterDMTools Vignette}
   %\VignetteEngine{knitr::rmarkdown}
